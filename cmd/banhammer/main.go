@@ -75,7 +75,7 @@ func newLogger(cfgLevel, version string) (*zap.Logger, error) {
 		return nil, fmt.Errorf("failed to build logger: %w", err)
 	}
 
-	zap.String("version", version)
+	logger = logger.With(zap.String("version", version))
 
 	// listen SIGUSR1 signal to reconfigure logger
 	go func() {
