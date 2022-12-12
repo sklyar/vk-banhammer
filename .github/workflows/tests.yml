@@ -20,5 +20,10 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest # we have a list of linters in our .golangci.yml config file
+          only-new-issues: true
       - name: Test with the Go CLI
         run: make test
