@@ -21,6 +21,9 @@ import (
 	"github.com/sklyar/vk-banhammer/internal/service"
 )
 
+// Version is the released version of gopass.
+var version = "unknown"
+
 func main() {
 	cfg, err := config.ParseConfig()
 	if err != nil {
@@ -28,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger, err := newLogger(cfg.LoggerLever)
+	logger, err := newLogger(cfg.LoggerLever, version)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -57,7 +60,7 @@ func main() {
 	}
 }
 
-func newLogger(cfgLevel string) (*zap.Logger, error) {
+func newLogger(cfgLevel, version string) (*zap.Logger, error) {
 	var level zapcore.Level
 	if err := level.UnmarshalText([]byte(cfgLevel)); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal logger level: %w", err)
@@ -71,6 +74,8 @@ func newLogger(cfgLevel string) (*zap.Logger, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to build logger: %w", err)
 	}
+
+	zap.String("version", version)
 
 	// listen SIGUSR1 signal to reconfigure logger
 	go func() {

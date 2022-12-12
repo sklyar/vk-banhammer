@@ -13,7 +13,7 @@ import (
 // VkClient is a VK API client.
 // It is used to mock VK API client in tests.
 //
-//go:generate mockgen -source=service.go -package=main -destination=service_mock.go VkClient
+//go:generate mockgen -source=service.go -package=service -destination=service_mock.go VkClient
 type VkClient interface {
 	UsersGet(params api.Params) (api.UsersGetResponse, error)
 	GroupsBan(params api.Params) (int, error)
