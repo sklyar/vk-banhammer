@@ -11,7 +11,7 @@ RUN go mod download
 
 COPY . ./
 
-RUNde go build -v -o banhammer ./cmd/banhammer/main.go -ldflags "-X main.version=${VERSION}"
+RUN go build -v -o banhammer ./cmd/banhammer/main.go -ldflags "-X main.version=${VERSION}"
 
 FROM debian:buster-slim
 RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
