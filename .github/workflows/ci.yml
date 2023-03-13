@@ -24,7 +24,6 @@ jobs:
         with:
           version: latest
           only-new-issues: true
-
   test:
     name: Test
     runs-on: 'ubuntu-20.04'
