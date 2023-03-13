@@ -8,50 +8,15 @@ on:
       - reopened
       - synchronize
 
-#jobs:
-#  deps:
-#    name: Dependencies
-#    runs-on: 'ubuntu-20.04'
-#    steps:
-#      - uses: actions/checkout@v3
-#      - uses: actions/setup-go@v4
-#        with:
-#          go-version-file: 'go.mod'
-#      - name: Setup Go module cache
-#        uses: actions/cache@v3
-#        with:
-#          path: |
-#            ~/.cache/go-build
-#            ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys: |
-#            ${{ runner.os }}-go-
-#      - name: Install dependencies
-#        if: steps.go-cache.outputs.cache-hit != 'true'
-#        run: make install
-#      - name: Save Go module cache
-#        uses: actions/cache/save@v3
-#        with:
-#          path: |
-
+jobs:
   lint:
     name: Lint
-#    needs: deps
     runs-on: 'ubuntu-20.04'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
-#      - name: Setup Go module cache
-#        uses: actions/cache@v3
-#        with:
-#          path: |
-#            ~/.cache/go-build
-#            ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys: |
-#            ${{ runner.os }}-go-
       - name: Test with the Go CLI
         run: make test
       - name: golangci-lint
@@ -62,21 +27,11 @@ on:
 
   test:
     name: Test
-#    needs: deps
     runs-on: 'ubuntu-20.04'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
-#      - name: Setup Go module cache
-#        uses: actions/cache@v3
-#        with:
-#          path: |
-#            ~/.cache/go-build
-#            ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys: |
-#            ${{ runner.os }}-go-
       - name: Test with the Go CLI
         run: make test
