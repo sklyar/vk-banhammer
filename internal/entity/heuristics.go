@@ -17,14 +17,14 @@ type HeuristicRules struct {
 }
 
 // Check checks if user qualifies for heuristics.
-func (rr *HeuristicRules) Check(user *object.UsersUser) (bool, BanReason) {
-	for _, rule := range rr.PersonNonGrata {
-		if rule.Check(user) {
-			return true, BanReasonPersonNonGrata
+func (rr *HeuristicRules) Check(user *object.UsersUser) (BanReason, bool) {
+	for _, r := range rr.PersonNonGrata {
+		if r.Check(user) {
+			return BanReasonPersonNonGrata, true
 		}
 	}
 
-	return false, BanReasonNone
+	return BanReasonNone, false
 }
 
 // HeuristicPersonNonGrataRule describes person non grata rule.

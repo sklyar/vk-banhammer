@@ -1,11 +1,12 @@
 module github.com/sklyar/vk-banhammer
 
-go 1.19
+go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/SevereCloud/vksdk/v2 v2.15.0
 	github.com/golang/mock v1.6.0
+	github.com/hashicorp/golang-lru/v2 v2.0.1
 	github.com/jessevdk/go-flags v1.5.0
 	go.uber.org/zap v1.24.0
 )

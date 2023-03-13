@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/sklyar/vk-banhammer/internal/entity"
+	"go.uber.org/zap"
 )
 
 type service interface {
@@ -20,10 +19,12 @@ type service interface {
 // Server is a banhammer HTTP server.
 // It handles VK callback API requests.
 type Server struct {
-	service                  service
-	callbackConfirmationCode string
+	srv     *http.Server
+	service service
 
-	srv *http.Server
+	// callbackConfirmationCode is a confirmation code for VK callback API.
+	// It is used to confirm that the server is the one that should receive the callback.
+	callbackConfirmationCode string
 
 	logger *zap.Logger
 }
@@ -33,8 +34,6 @@ func NewServer(logger *zap.Logger, addr string, service service, callbackConfirm
 	mux := http.NewServeMux()
 
 	srv := &Server{
-		service:                  service,
-		callbackConfirmationCode: callbackConfirmationCode,
 		srv: &http.Server{
 			Addr:              addr,
 			Handler:           mux,
@@ -42,7 +41,9 @@ func NewServer(logger *zap.Logger, addr string, service service, callbackConfirm
 			WriteTimeout:      10 * time.Second,
 			IdleTimeout:       30 * time.Second,
 		},
-		logger: logger,
+		service:                  service,
+		callbackConfirmationCode: callbackConfirmationCode,
+		logger:                   logger,
 	}
 
 	mux.HandleFunc("/new_message", srv.gatewayHandler)

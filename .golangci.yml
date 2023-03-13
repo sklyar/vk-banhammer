@@ -1,0 +1,88 @@
+run:
+  go: "1.20"
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+  govet:
+    check-shadowing: true
+    enable-all: true
+  gofmt:
+    simplify: true
+  gci:
+    sections:
+      - standard
+      - default
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+    disabled-checks:
+      - paramTypeCombine
+      - whyNoLint
+    settings:
+      captLocal:
+        paramsOnly: true
+  revive:
+    ignore-generated-header: true
+
+linters:
+  enable-all: true
+  fast: false
+  disable:
+    - govet
+    - exhaustive
+    - exhaustivestruct
+    - exhaustruct
+    - forbidigo
+    - funlen
+    - godox
+    - goimports
+    - golint
+    - gomnd
+    - gci
+    - gomoddirectives
+    - ifshort
+    - interfacer
+    - maligned
+    - nlreturn
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - testpackage
+    - varcheck
+    - varnamelen
+    - wrapcheck
+    - wsl
+    - tagliatelle
+    - goerr113
+    - lll
+    - musttag
+    - deadcode # Because is deprecated
+    - rowserrcheck # Because of generics not supported
+    - wastedassign # Because of generics not supported
+
+issues:
+  exclude:
+    - ST1000 # disable package comments check
+  exclude-rules:
+    - linters:
+        - dupl
+        - gochecknoglobals
+        - goerr113
+        - gosec
+        - maintidx
+      path: _test.go
+
+    - linters:
+        - lll
+      source: "^//( )?go:generate "
+
+  max-per-linter: 0
+  max-same-issues: 0
+  new: false

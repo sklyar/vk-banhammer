@@ -19,6 +19,7 @@ type Config struct {
 // ParseConfig parses banhammer config.
 func ParseConfig() (*Config, error) {
 	var cfg Config
+
 	if _, err := flags.Parse(&cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse: %w", err)
 	}

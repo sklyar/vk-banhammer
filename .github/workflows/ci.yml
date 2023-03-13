@@ -1,0 +1,36 @@
+name: CI
+on:
+  push:
+    branches:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: 'ubuntu-20.04'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@c51a7207680f1bee06f4a751214aab70667f9e25
+        with:
+          go-version-file: 'go.mod'
+      - name: Test with the Go CLI
+        run: make test
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          only-new-issues: true
+  test:
+    name: Test
+    runs-on: 'ubuntu-20.04'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@c51a7207680f1bee06f4a751214aab70667f9e25
+        with:
+          go-version-file: 'go.mod'
+      - name: Test with the Go CLI
+        run: make test
