@@ -14,7 +14,7 @@ jobs:
     runs-on: 'ubuntu-20.04'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@c51a7207680f1bee06f4a751214aab70667f9e25
         with:
           go-version-file: 'go.mod'
       - name: Test with the Go CLI
