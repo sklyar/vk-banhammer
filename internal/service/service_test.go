@@ -7,9 +7,12 @@ import (
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
 	"github.com/golang/mock/gomock"
-
 	"github.com/sklyar/vk-banhammer/internal/entity"
 )
+
+type dependencies struct {
+	client *MockVkClient
+}
 
 func TestServiceCheckComment(t *testing.T) {
 	t.Parallel()
@@ -21,10 +24,6 @@ func TestServiceCheckComment(t *testing.T) {
 		Text:    "test",
 		PostID:  911,
 		OwnerID: -61061413,
-	}
-
-	type dependencies struct {
-		client *MockVkClient
 	}
 
 	tests := []struct {
@@ -41,10 +40,7 @@ func TestServiceCheckComment(t *testing.T) {
 			heuristicRules: entity.HeuristicRules{},
 			setup: func(d *dependencies) {
 				d.client.EXPECT().
-					UsersGet(api.Params{
-						"user_ids": 87524863,
-						"fields":   "bdate",
-					}).
+					UsersGet(api.Params{"user_ids": 87524863, "fields": "bdate"}).
 					Return(api.UsersGetResponse{}, errors.New("some error"))
 			},
 			want:    entity.BanReasonNone,
@@ -56,10 +52,7 @@ func TestServiceCheckComment(t *testing.T) {
 			heuristicRules: entity.HeuristicRules{},
 			setup: func(d *dependencies) {
 				d.client.EXPECT().
-					UsersGet(api.Params{
-						"user_ids": 87524863,
-						"fields":   "bdate",
-					}).
+					UsersGet(api.Params{"user_ids": 87524863, "fields": "bdate"}).
 					Return(api.UsersGetResponse{}, nil)
 			},
 			want:    entity.BanReasonNone,
@@ -74,21 +67,15 @@ func TestServiceCheckComment(t *testing.T) {
 				},
 			},
 			setup: func(d *dependencies) {
+				user := object.UsersUser{
+					ID:        87524863,
+					FirstName: "Bob",
+					LastName:  "Marley",
+				}
+
 				d.client.EXPECT().
-					UsersGet(api.Params{
-						"user_ids": 87524863,
-						"fields":   "bdate",
-					}).
-					Return(
-						[]object.UsersUser{
-							{
-								ID:        87524863,
-								FirstName: "Bob",
-								LastName:  "Marley",
-							},
-						},
-						nil,
-					)
+					UsersGet(api.Params{"user_ids": 87524863, "fields": "bdate"}).
+					Return([]object.UsersUser{user}, nil)
 			},
 			want:    entity.BanReasonNone,
 			wantErr: false,
@@ -102,21 +89,15 @@ func TestServiceCheckComment(t *testing.T) {
 				},
 			},
 			setup: func(d *dependencies) {
+				user := object.UsersUser{
+					ID:        87524863,
+					FirstName: "Bob",
+					LastName:  "Marley",
+				}
+
 				d.client.EXPECT().
-					UsersGet(api.Params{
-						"user_ids": 87524863,
-						"fields":   "bdate",
-					}).
-					Return(
-						[]object.UsersUser{
-							{
-								ID:        87524863,
-								FirstName: "Bob",
-								LastName:  "Marley",
-							},
-						},
-						nil,
-					)
+					UsersGet(api.Params{"user_ids": 87524863, "fields": "bdate"}).
+					Return([]object.UsersUser{user}, nil)
 
 				d.client.EXPECT().GroupsBan(api.Params{
 					"group_id":        61061413,
@@ -129,7 +110,6 @@ func TestServiceCheckComment(t *testing.T) {
 					"owner_id":   -61061413,
 					"comment_id": 1,
 				}).Return(1, nil)
-
 			},
 			want:    entity.BanReasonPersonNonGrata,
 			wantErr: false,
@@ -143,22 +123,16 @@ func TestServiceCheckComment(t *testing.T) {
 				},
 			},
 			setup: func(d *dependencies) {
+				user := object.UsersUser{
+					ID:        87524863,
+					FirstName: "Bob",
+					LastName:  "Marley",
+					Bdate:     "1.1.2000",
+				}
+
 				d.client.EXPECT().
-					UsersGet(api.Params{
-						"user_ids": 87524863,
-						"fields":   "bdate",
-					}).
-					Return(
-						[]object.UsersUser{
-							{
-								ID:        87524863,
-								FirstName: "Bob",
-								LastName:  "Marley",
-								Bdate:     "1.1.2000",
-							},
-						},
-						nil,
-					)
+					UsersGet(api.Params{"user_ids": 87524863, "fields": "bdate"}).
+					Return([]object.UsersUser{user}, nil)
 
 				d.client.EXPECT().GroupsBan(api.Params{
 					"group_id":        61061413,
@@ -200,6 +174,58 @@ func TestServiceCheckComment(t *testing.T) {
 				t.Errorf("CheckComment() got = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestServiceCheckComment_retrieveUserFromCache(t *testing.T) {
+	t.Parallel()
+
+	user := object.UsersUser{
+		ID:        87524863,
+		FirstName: "Bob",
+		LastName:  "Marley",
+	}
+	comment := &entity.Comment{
+		ID:      1,
+		FromID:  87524863,
+		Date:    1580000000,
+		Text:    "test",
+		PostID:  911,
+		OwnerID: -61061413,
+	}
+	heuristicRules := entity.HeuristicRules{
+		PersonNonGrata: []entity.HeuristicPersonNonGrataRule{
+			{Name: toPtr("Bob")},
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	deps := dependencies{client: NewMockVkClient(ctrl)}
+	deps.client.EXPECT().
+		UsersGet(api.Params{"user_ids": 87524863, "fields": "bdate"}).
+		Return([]object.UsersUser{user}, nil).
+		Times(1)
+
+	s := NewService(deps.client, heuristicRules)
+
+	// First call should not use cache.
+	got, err := s.CheckComment(comment)
+	if err != nil {
+		t.Errorf("CheckComment() error = %v, wantErr %v", err, false)
+		return
+	}
+	if got != entity.BanReasonNone {
+		t.Errorf("CheckComment() got = %v, want %v", got, entity.BanReasonNone)
+	}
+
+	// Second call should use cache.
+	got, err = s.CheckComment(comment)
+	if err != nil {
+		t.Errorf("CheckComment() error = %v, wantErr %v", err, false)
+		return
+	}
+	if got != entity.BanReasonNone {
+		t.Errorf("CheckComment() got = %v, want %v", got, entity.BanReasonNone)
 	}
 }
 

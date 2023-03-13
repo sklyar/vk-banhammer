@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"regexp"
@@ -42,7 +41,6 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to load heuristic rules", zap.Error(err))
 	}
-	log.Printf("heuristic rules: %+v", heuristicRules)
 	if err := validateHeuristicRules(heuristicRules); err != nil {
 		logger.Fatal("failed to validate heuristic rules", zap.Error(err))
 	}
