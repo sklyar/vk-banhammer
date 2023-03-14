@@ -5,8 +5,7 @@ COMMIT = $(shell git rev-parse --short HEAD)
 DATE = $(shell date +%F_%H-%M-%S)
 
 NAME = vk-banhammer
-VCS = github.com
-ORG = sklyar
+TAG = $(NAME):$(VERSION)
 
 .PHONY: install
 install:
@@ -38,11 +37,11 @@ build:
 docker-build:
 	$(call print-target)
 	$(call check_defined, VERSION)
-	$(V)docker build -t sklyar/banhammer:${VERSION} --build-arg VERSION=${VERSION} .
+	$(V)docker build -t ${TAG} --build-arg VERSION=${VERSION} .
 
 .PHONY: docker-build-local
 docker-build-local: ## build in docker for local env
-	$(V)docker build -t sklyar/banhammer:local .
+	$(V)docker build -t banhammer:local .
 
 .PHONY: diff
 diff: ## git diff

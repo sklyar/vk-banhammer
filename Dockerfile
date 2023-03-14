@@ -1,20 +1,13 @@
 FROM golang:1.20-buster as builder
 
-ARG TARGETPLATFORM=linux/amd64
-ARG VERSION=0.0
-
+ARG VERSION
 WORKDIR /app
+COPY . .
 
-COPY go.* ./
-
-RUN go mod download
-
-COPY . ./
-
-RUN go build -v -o banhammer ./cmd/banhammer/main.go -ldflags "-X main.version=${VERSION}"
+RUN go build -v -o banhammer -ldflags "-s -v -w -X 'main.version=${VERSION}'" ./cmd/banhammer/main.go
 
 FROM debian:buster-slim
-RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 

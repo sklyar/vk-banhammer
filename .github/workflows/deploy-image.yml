@@ -1,40 +1,29 @@
-name: Create and publish a Docker image
+name: Deploy image
 
 on:
   push:
-    # Publish `master` as Docker `latest` image.
     branches:
       - master
-
     tags:
       - v*
-
-  # Run tests for any PRs.
   pull_request:
-
 env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push-image:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    runs-on: 'ubuntu-20.04'
     steps:
       - uses: actions/checkout@v3
-
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
       - name: Build image
-        run: make docker-build VERSION=${{ github.sha }}
-
+        run: make TAG=$IMAGE_NAME VERSION=${{ github.sha }} docker-build
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-
       - name: Push image
         run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-
+          IMAGE_ID=ghcr.io/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
