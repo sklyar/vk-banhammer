@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  vk-banhammer:
+    image: "ghcr.io/sklyar/vk-banhammer:latest"
+    container_name: "vk-banhammer"
+    environment:
+      API_TOKEN: "enter your token here"
+      CALLBACK_CONFIRMATION_CODE: "enter your confirmation code here"
+      HTTP_ADDR: ":8091"
+      LOGGER_LEVEL: "debug"
+      HEURISTICS_PATH: "/app/heuristics.toml"
+    ports:
+      - "8080:8091"
+    restart: always
+    volumes:
+      - ./heuristics.toml:/app/heuristics.toml
