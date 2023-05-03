@@ -3,14 +3,13 @@ package service
 import (
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
-
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/sklyar/vk-banhammer/internal/entity"
+	"go.uber.org/zap"
 )
 
 const cacheSize = 1000
@@ -40,10 +39,12 @@ type Service struct {
 
 	cache *lru.Cache[int, *object.UsersUser]
 	m     sync.RWMutex
+
+	logger *zap.Logger
 }
 
 // NewService creates a new banhammer service.
-func NewService(client VkClient, heuristicRules entity.HeuristicRules) *Service {
+func NewService(logger *zap.Logger, client VkClient, heuristicRules entity.HeuristicRules) *Service {
 	cache, err := lru.New[int, *object.UsersUser](cacheSize)
 	if err != nil {
 		panic(err)
@@ -54,6 +55,7 @@ func NewService(client VkClient, heuristicRules entity.HeuristicRules) *Service 
 		client:         client,
 		cache:          cache,
 		m:              sync.RWMutex{},
+		logger:         logger,
 	}
 }
 
@@ -64,7 +66,13 @@ func (s *Service) CheckComment(comment *entity.Comment) (entity.BanReason, error
 		return entity.BanReasonNone, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	log.Println("user:", user.FirstName, user.LastName, user.Bdate)
+	s.logger.Debug(
+		"new comment",
+		zap.Int("id", user.ID),
+		zap.String("first_name", user.FirstName),
+		zap.String("last_name", user.LastName),
+		zap.String("bday", user.Bdate),
+	)
 
 	reason, shouldBan := s.heuristicRules.Check(user)
 	if shouldBan {

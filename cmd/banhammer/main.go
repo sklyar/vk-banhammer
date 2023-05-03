@@ -11,13 +11,12 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/SevereCloud/vksdk/v2/api"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-
 	"github.com/sklyar/vk-banhammer/internal/config"
 	"github.com/sklyar/vk-banhammer/internal/entity"
 	"github.com/sklyar/vk-banhammer/internal/server"
 	"github.com/sklyar/vk-banhammer/internal/service"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Version is the released version of gopass.
@@ -50,7 +49,7 @@ func main() {
 
 	vkClient := api.NewVK(cfg.APIToken)
 
-	banhammerService := service.NewService(vkClient, heuristicRules)
+	banhammerService := service.NewService(logger, vkClient, heuristicRules)
 	httpServer := server.NewServer(logger, cfg.HTTPAddr, banhammerService, cfg.CallbackConfirmationCode)
 
 	if err := httpServer.ListenAndServe(ctx); err != nil {

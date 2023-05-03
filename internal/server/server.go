@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -86,23 +85,23 @@ func (s *Server) confirmationHandler(w http.ResponseWriter, _ *request) {
 func (s *Server) wallReplyNewHandler(w http.ResponseWriter, r *request) {
 	var comment entity.Comment
 	if err := json.Unmarshal(r.Object, &comment); err != nil {
-		log.Printf("failed to unmarshal comment: %v", err)
+		s.logger.Error("failed to unmarshal comment", zap.Error(err))
 		return
 	}
 
 	reason, err := s.service.CheckComment(&comment)
 	if err != nil {
-		log.Printf("failed to check comment: %v", err)
+		s.logger.Error("failed to check comment", zap.Error(err))
 		_, _ = w.Write([]byte("ok"))
 		return
 	}
 
-	log.Printf("comment checked: %v", reason)
+	s.logger.Debug("comment checked", zap.String("reason", string(reason)))
 	_, _ = w.Write([]byte("ok"))
 }
 
 func (s *Server) unknownTypeHandler(w http.ResponseWriter, msgRequest *request) {
-	log.Printf("unknown type: %s", msgRequest.Type)
+	s.logger.Error("unknown type", zap.String("msg_type", msgRequest.Type))
 	_, _ = w.Write([]byte("ok"))
 }
 

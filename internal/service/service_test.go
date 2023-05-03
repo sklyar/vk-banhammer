@@ -8,6 +8,7 @@ import (
 	"github.com/SevereCloud/vksdk/v2/object"
 	"github.com/golang/mock/gomock"
 	"github.com/sklyar/vk-banhammer/internal/entity"
+	"go.uber.org/zap"
 )
 
 type dependencies struct {
@@ -164,7 +165,7 @@ func TestServiceCheckComment(t *testing.T) {
 				tt.setup(&deps)
 			}
 
-			s := NewService(deps.client, tt.heuristicRules)
+			s := NewService(zap.NewNop(), deps.client, tt.heuristicRules)
 			got, err := s.CheckComment(tt.comment)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckComment() error = %v, wantErr %v", err, tt.wantErr)
@@ -206,7 +207,7 @@ func TestServiceCheckComment_retrieveUserFromCache(t *testing.T) {
 		Return([]object.UsersUser{user}, nil).
 		Times(1)
 
-	s := NewService(deps.client, heuristicRules)
+	s := NewService(zap.NewNop(), deps.client, heuristicRules)
 
 	// First call should not use cache.
 	got, err := s.CheckComment(comment)
