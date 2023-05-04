@@ -63,36 +63,25 @@ func newLogger(cfgLevel, version string) (*zap.Logger, error) {
 		return nil, fmt.Errorf("failed to unmarshal logger level: %w", err)
 	}
 
-	zapCfg := zap.NewDevelopmentConfig()
-	zapCfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
-	zapCfg.Level = zap.NewAtomicLevelAt(level)
-
-	logger, err := zapCfg.Build()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build logger: %w", err)
+	encoderConfig := zapcore.EncoderConfig{
+		LevelKey:       "level",
+		NameKey:        "logger",
+		MessageKey:     "msg",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
+		EncodeDuration: zapcore.SecondsDurationEncoder,
 	}
 
+	atomicLevel := zap.NewAtomicLevelAt(level)
+	core := zapcore.NewCore(
+		zapcore.NewConsoleEncoder(encoderConfig),
+		zapcore.Lock(os.Stdout),
+		atomicLevel,
+	)
+
+	logger := zap.New(core)
 	logger = logger.With(zap.String("version", version))
-
-	// listen SIGUSR1 signal to reconfigure logger
-	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGUSR1)
-
-		for range c {
-			if err := zapCfg.Level.UnmarshalText([]byte(cfgLevel)); err != nil {
-				logger.Error("failed to unmarshal logger level", zap.Error(err))
-				continue
-			}
-
-			if err := logger.Sync(); err != nil {
-				logger.Error("failed to sync logger", zap.Error(err))
-				continue
-			}
-
-			logger.Info("logger reconfigured")
-		}
-	}()
 
 	return logger, nil
 }
