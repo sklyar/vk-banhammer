@@ -63,6 +63,7 @@ func NewService(logger *zap.Logger, client VkClient, heuristicRules entity.Heuri
 func (s *Service) CheckComment(comment *entity.Comment) (entity.BanReason, error) {
 	user, err := s.getUserByID(comment.FromID)
 	if err != nil {
+		s.logger.Error("failed to get user", zap.Error(err), zap.Reflect("comment", comment))
 		return entity.BanReasonNone, fmt.Errorf("failed to get user: %w", err)
 	}
 
