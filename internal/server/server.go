@@ -96,7 +96,9 @@ func (s *Server) wallReplyNewHandler(w http.ResponseWriter, r *request) {
 		return
 	}
 
-	s.logger.Debug("comment checked", zap.String("reason", string(reason)))
+	if reason == entity.BanReasonPersonNonGrata {
+		s.logger.Info("banning user", zap.Reflect("comment", comment))
+	}
 	_, _ = w.Write([]byte("ok"))
 }
 

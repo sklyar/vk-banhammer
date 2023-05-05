@@ -15,11 +15,9 @@ import (
 )
 
 type Config struct {
-	Port        int    `long:"port" env:"PORT" description:"Port" default:"8080"`
-	ClientID    string `long:"client-id" env:"CLIENT_ID" description:"Application ID" required:"true"`
-	GroupID     string `long:"group-id" env:"GROUP_ID" description:"Identifier of the community for which the token will be issued" required:"true"`
-	RedirectURI string `long:"redirect-uri" env:"REDIRECT_URI" description:"Address to which the user will be redirected after authorization" required:"true"`
-	Scope       string `long:"scope" env:"SCOPE" description:"Bitmask of the application's access settings, which should be checked during authorization and the missing ones should be requested" required:"true"`
+	Port     int    `long:"port" env:"PORT" description:"Port" default:"8080"`
+	ClientID string `long:"client-id" env:"CLIENT_ID" description:"Application ID" required:"true"`
+	Scope    string `long:"scope" env:"SCOPE" description:"Bitmask of the application's access settings, which should be checked during authorization and the missing ones should be requested" required:"true"`
 }
 
 func main() {
@@ -32,7 +30,6 @@ func main() {
 	app := &App{Config: cfg}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/authorize", app.Authorize)
-	mux.HandleFunc("/callback", app.Callback)
 
 	server := &http.Server{
 		Addr:              ":" + strconv.Itoa(cfg.Port),
@@ -72,8 +69,7 @@ func (app *App) Authorize(w http.ResponseWriter, r *http.Request) {
 
 	q := u.Query()
 	q.Set("client_id", app.ClientID)
-	q.Set("group_ids", app.GroupID)
-	q.Set("redirect_uri", app.RedirectURI)
+	q.Set("redirect_uri", "https://oauth.vk.com/blank.html")
 	q.Set("scope", app.Scope)
 	u.RawQuery = q.Encode()
 
@@ -81,5 +77,3 @@ func (app *App) Authorize(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, rawURL, http.StatusFound)
 }
-
-func (app *App) Callback(_ http.ResponseWriter, _ *http.Request) {}
