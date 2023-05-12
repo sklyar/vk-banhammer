@@ -178,7 +178,7 @@ func TestServiceCheckComment(t *testing.T) {
 	}
 }
 
-func TestServiceCheckComment_retrieveUserFromCache(t *testing.T) {
+func TestServiceCheckComment_RetrieveUserFromCache(t *testing.T) {
 	t.Parallel()
 
 	user := object.UsersUser{

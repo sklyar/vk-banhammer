@@ -151,5 +151,5 @@ func (s *Service) do(fn func(api.Params) (int, error), params api.Params) error 
 }
 
 func isCommentFromGroup(comment *entity.Comment) bool {
-	return strings.HasPrefix(comment.Text, "[club")
+	return strings.HasPrefix(comment.Text, "[club") || comment.FromID < 0
 }
